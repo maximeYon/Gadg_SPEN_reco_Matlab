@@ -1,0 +1,4 @@
+fmac 0 0 Apply sensitivities
+ifftc 2 Fourier along RO
+reshape 15 120 15 5 40
+fmac 1 1 Apply SPEN

@@ -1,0 +1,97 @@
+function [L2image]=SPEN_Reconstruction_Gadg(DoMotionCorrection,TVW_L2,TresholdCC,WeightingFactor,parameters,CmplxData)
+
+%% Load and Order data
+% Result of this block is sequence specific. You might need to write
+% your own data reading block, depending on the used sequence. Whatever is the case,
+% idea is to have data ordered in this way:
+% (Phase encoding) x (Readout) x (Channels) x (Slices) x (Repetitions) x (bvalues)
+% and get some parameters needed for further data processing (echo
+% spacing, FOV, nPE, nRO, nShots, nSlices, nbweight and CHIRP rvalue).
+% Read_data;
+
+%% Get parameter from parameters structure
+LPE = parameters.LPE;
+rvalue = parameters.rvalue;
+nReps = parameters.nReps;
+Npe = parameters.Npe;
+nShots = parameters.nShots;
+EchoSpacing = parameters.EchoSpacing;
+PEShift = parameters.PEShift;
+nWeight = parameters.nWeight;
+nSlices = parameters.nSlices;
+
+
+%% Parameter for the Super-Resolution matrix
+ParamSR.LPE=LPE; % FOV along PE direction [cm]
+ParamSR.rvalue=-rvalue; % CHIRP rvalue
+ParamSR.EchoSpacing=EchoSpacing; % Echo spacing [us]
+if nShots>1
+    ParamSR.PEShift=PEShift; % Shift for data along PE direction to remove shift added by EPI read-out
+else
+    ParamSR.PEShift=PEShift; % Shift for data along PE direction to remove shift added by EPI read-out
+end
+
+
+%% PE Shift
+% Shift data along PE direction to remove phase added by EPI read-out
+
+CmplxDataSh = PEShiftingDataset(CmplxData,-PEShift,LPE,nShots);
+clear CmplxData
+
+%% SuperResolution (SR) matrix calculation
+% SR matrix depends on the sequence in use. This
+% calculation is for 180deg encoding CHIRP and another 180deg
+% slice-non-selective inversion pulse. If you use different sequence, you might need
+% to change some parameters in the function (or write your own calculation
+% of SR matrix).
+ChirpAmpExtraFactor=1;
+
+% this is for the final reconstruction (size equal to final data size)
+[FinalAFull]=SuperResolution_VariableSize_Sim_V3(Npe,ParamSR,1,WeightingFactor,nShots,ChirpAmpExtraFactor);
+
+%this is for phase per shot used for motion correction
+FinalA=PartitionDimInterleaved(FinalAFull,1,nShots);
+
+%% Coil Compression
+% Determine number of virtual channels to which compress data, but still
+% not  to loose too much information (TresholdCC). If this condition,
+% is not reached, we will compress to three coils.
+
+[CmplxDataShCC1, gccmtx_aligned_finalx, Energyx]=CoilCompression(permute(CmplxDataSh,[2 1 3 4 5 6 7]),1);
+CmplxDataShCC1=permute(CmplxDataShCC1, [2 1 3 4 5 6 7]);
+
+nccx=find(Energyx(:,1)<TresholdCC,1);
+if isempty(nccx) && size(CmplxData,3)>2
+    nccx=3;
+elseif isempty(nccx)
+    nccx=1;
+end
+
+%% ONE SHOT Reconstruction
+% Description of the workflow given inside the script. You might want to
+% change L2 weight.
+if nShots==1
+    OneShotReconstruction
+else
+    
+    
+    %% Determine SENS map, as well as EO map
+    % Determine EO maps for each slice from B0 data
+    % The even-odd maps are assumed not to change for other b-weigted images and repetitions,
+    % hence, they will be later applied for them also.
+    % More explanations inside the function
+    
+    RepsToDoEOAndB0=nReps;
+    z =clock;
+    [EvenOddMapStoredBySlices, FinalB0Recon]=SensAndEOMapFromB0(CmplxDataSh, FinalAFull, gccmtx_aligned_finalx, nccx, nShots,RepsToDoEOAndB0,TVW_L2);
+    etime(clock, z)
+    %% Final reconstruction  
+    
+    z =clock;
+    % getting final images:
+        [L2image]=FinalReconstruction(CmplxDataSh, gccmtx_aligned_finalx, nccx, EvenOddMapStoredBySlices, FinalA, FinalAFull, FinalB0Recon,...
+                                                        nShots, TVW_L2, DoMotionCorrection);
+    
+    etime(clock, z)
+end
+end

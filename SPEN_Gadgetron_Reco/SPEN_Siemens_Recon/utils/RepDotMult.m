@@ -1,0 +1,9 @@
+function Out=RepDotMult(T1,T2)
+d1=size(T1);
+d2=size(T2);
+d1(end+1:numel(d2))=1;
+d2(end+1:numel(d1))=1;
+TrdSz=max(d1,d2);
+T1=repmat(T1,TrdSz./d1);
+T2=repmat(T2,TrdSz./d2);
+Out=T1.*T2;
