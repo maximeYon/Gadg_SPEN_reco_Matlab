@@ -230,13 +230,15 @@ end
                  idx_data = intersect(idx_Encode,idx_Slice);
                  idx_data = idx_data(1,1);
                  [~,idx_2,idx_3,idx_4,idx_5,idx_6] = ind2sub(size(image.bits.buffer.headers.kspace_encode_step_1),idx_data);
-                 img_head.position(:,s) = image.bits.buffer.headers.position(:,idx_2,idx_3,idx_4,idx_5,idx_6);  
-                end
+                 img_head.position = image.bits.buffer.headers.position(:,idx_2,idx_3,idx_4,idx_5,idx_6);  
+%                  img_head.position(:,s) = image.bits.buffer.headers.position(:,idx_2,idx_3,idx_4,idx_5,idx_6);  
+
                 %% Prepare image.data and image.header
-                image_saved = gadgetron.types.Image.from_data(abs(SPEN_Image),img_head);
+                image_saved = gadgetron.types.Image.from_data(abs(SPEN_Image(:,:,s)),img_head);
                 image_saved.header.image_type = gadgetron.types.Image.MAGNITUDE;
                 
                 %% Send image
                 connection.send(image_saved);
+                end
 
 end

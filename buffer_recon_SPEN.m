@@ -12,7 +12,7 @@ Nset = (connection.header.encoding.encodingLimits.set.maximum+1)/Nsegments;
 %% loop over the repetitions while keeping the constant parameter (in the Parameters structure)
 for ind = 1:Nset
     next_acquisition = @connection.next;
-    [Parameters] = reconstruct_image(next_acquisition,connection,Parameters);
+    [Parameters] = reconstruct_SPEN(next_acquisition,connection,Parameters);
 end
 
 end
