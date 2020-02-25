@@ -215,25 +215,25 @@ end
             time_reco = toc;
             disp(['Duration of SPEN reco = ' num2str(time_reco) ' s'])
             
+            % reshape to nCoils, X, Y Z 
+            SPEN_Image = reshape(SPEN_Image,[ 1,size(SPEN_Image,1),size(SPEN_Image,2),size(SPEN_Image,3)]);
+            SPEN_Image = abs(SPEN_Image);
+            
             %% save the constant parameter to Parameter structure
             Parameters.SPEN_parameters = acq_header.SPEN_parameters;
             
             %% create suitable header for each slice
-                img_head = ismrmrd.ImageHeader;
+                 img_head = ismrmrd.ImageHeader;
                 
-                %% Set the good header parameters for all slices               
+                %% Set the good header parameters for all slices 
                 idx_data = find(image.bits.buffer.headers.kspace_encode_step_1 ~= 0);
                 idx_data = idx_data(1,1);
                 [~,idx_2,idx_3,idx_4,idx_5,idx_6] = ind2sub(size(image.bits.buffer.headers.kspace_encode_step_1),idx_data);
                 
                 img_head.matrix_size(1) = size(SPEN_Image,1);
                 img_head.matrix_size(2) = size(SPEN_Image,2);
-                img_head.matrix_size(3) = size(SPEN_Image,3);
-                
-                img_head.field_of_view(1) = acq_header.SPEN_parameters.FOV(1,1);
-                img_head.field_of_view(2) = acq_header.SPEN_parameters.FOV(1,2);
-                img_head.field_of_view(3) = acq_header.SPEN_parameters.FOV(1,3);
-                
+                img_head.matrix_size(3) = 1; % the slices are saved 1 by 1
+                               
                 img_head.read_dir = image.bits.buffer.headers.read_dir(:,idx_2,idx_3,idx_4,idx_5,idx_6);
                 img_head.phase_dir = image.bits.buffer.headers.phase_dir(:,idx_2,idx_3,idx_4,idx_5,idx_6);
                 img_head.slice_dir = image.bits.buffer.headers.slice_dir(:,idx_2,idx_3,idx_4,idx_5,idx_6);
@@ -241,28 +241,34 @@ end
                 img_head.acquisition_time_stamp = image.bits.buffer.headers.acquisition_time_stamp(:,idx_2,idx_3,idx_4,idx_5,idx_6);
                 img_head.image_series_index = 0;
                 img_head.channels = 1;
-                img_head.data_type= 5;
+                img_head.data_type= select_data_type(SPEN_Image);
                 
                  %% Set the good header parameters for each slice 
-                for s = 1:size(SPEN_Image,3)
-                 img_head.image_index(s) = s+((counter-1)*s)*1000; %g.image_num;
+                
+                for s = 1:size(SPEN_Image,4)
+                 img_head.image_index(s) = (s+(counter-1)*s)*1000; %g.image_num;
                  idx_Encode = find(image.bits.buffer.headers.kspace_encode_step_1 ~= 0);
                  idx_Slice = find(image.bits.buffer.headers.slice==s-1);
                  idx_data = intersect(idx_Encode,idx_Slice);
                  idx_data = idx_data(1,1);
                  [~,idx_2,idx_3,idx_4,idx_5,idx_6] = ind2sub(size(image.bits.buffer.headers.kspace_encode_step_1),idx_data);
                  img_head.position = image.bits.buffer.headers.position(:,idx_2,idx_3,idx_4,idx_5,idx_6);  
-%                  img_head.position(:,s) = image.bits.buffer.headers.position(:,idx_2,idx_3,idx_4,idx_5,idx_6);  
 
                 %% Prepare image.data and image.header
-                image_saved = gadgetron.types.Image.from_data(abs(SPEN_Image(:,:,s)),img_head);
+                % manually initialize the image object with img_head
+                %image_saved = gadgetron.types.Image(img_head, '', SPEN_Image(:, :, :, s));
+                % Or automatically create the header,but do not fill every field
+                image_saved = gadgetron.types.Image.from_data(SPEN_Image(:,:,:,s),img_head);
                 image_saved.header.image_type = gadgetron.types.Image.MAGNITUDE;
+                
+                %% re-write some header fields
+                image_saved.header.field_of_view(1) = acq_header.SPEN_parameters.FOV(1,1);
+                image_saved.header.field_of_view(2) = acq_header.SPEN_parameters.FOV(1,2);
+                image_saved.header.field_of_view(3) = acq_header.SPEN_parameters.FOV(1,3);
                 
                 %% Send image
                 connection.send(image_saved);
                 end
-
-
 end
 
 
