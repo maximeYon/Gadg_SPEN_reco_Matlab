@@ -244,6 +244,12 @@ end
                 image_saved.header.field_of_view(1) = acq_header.SPEN_parameters.FOV(1,1);
                 image_saved.header.field_of_view(2) = acq_header.SPEN_parameters.FOV(1,2);
                 image_saved.header.field_of_view(3) = acq_header.SPEN_parameters.FOV(1,3);
+                Nslice = acq_header.SPEN_parameters.nSlices;
+                image_saved.header.image_index = (s+(counter-1)*Nslice)*1000; %g.image_num;
+                
+                image_saved.header.slice = acq_header.SPEN_parameters.nSlices;
+                image_saved.header.set = acq_header.SPEN_parameters.set/acq_header.SPEN_parameters.nShots;
+                
                 
                 %% Send image
                 connection.send(image_saved);

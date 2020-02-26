@@ -59,14 +59,13 @@ if counter==0
     acq_header.SPEN_parameters.matrixSize(1,2) = acq_header.SPEN_parameters.Nky;
 %     acq_header.SPEN_parameters.nShots = acq_header.SPEN_parameters.Nseg;
     acq_header.SPEN_parameters.nShots = acq_header.SPEN_parameters.Nky/acq_header.SPEN_parameters.Enc1;
-    acq_header.SPEN_parameters.repetition = acq_header.SPEN_parameters.set/acq_header.SPEN_parameters.nShots;
     clearvars ind
     
     %% Adapt specific SPEN parameters
     acq_header.SPEN_parameters.LPE = acq_header.SPEN_parameters.FOV(1,2)/10;
     acq_header.SPEN_parameters.nReps = 1; %% Need to be changed !!!!!!!!!!!!!!!!!
     acq_header.SPEN_parameters.Npe = acq_header.SPEN_parameters.matrixSize(1,2);
-    acq_header.SPEN_parameters.nWeight = acq_header.SPEN_parameters.repetition;
+    acq_header.SPEN_parameters.nWeight = acq_header.SPEN_parameters.set/acq_header.SPEN_parameters.nShots;
     
     %% Define user parameter
     acq_header.SPEN_parameters.TVW_L2.Final=0.15;  % Weight for L2 regularization for final reconstruction
@@ -246,7 +245,6 @@ end
                  %% Set the good header parameters for each slice 
                 
                 for s = 1:size(SPEN_Image,4)
-                 img_head.image_index(s) = (s+(counter-1)*s)*1000; %g.image_num;
                  idx_Encode = find(image.bits.buffer.headers.kspace_encode_step_1 ~= 0);
                  idx_Slice = find(image.bits.buffer.headers.slice==s-1);
                  idx_data = intersect(idx_Encode,idx_Slice);
@@ -265,6 +263,11 @@ end
                 image_saved.header.field_of_view(1) = acq_header.SPEN_parameters.FOV(1,1);
                 image_saved.header.field_of_view(2) = acq_header.SPEN_parameters.FOV(1,2);
                 image_saved.header.field_of_view(3) = acq_header.SPEN_parameters.FOV(1,3);
+                Nslice = acq_header.SPEN_parameters.nSlices;
+                image_saved.header.image_index = (s+(counter-1)*Nslice)*1000; %g.image_num;
+                
+                image_saved.header.slice = acq_header.SPEN_parameters.nSlices;
+                image_saved.header.set = acq_header.SPEN_parameters.set/acq_header.SPEN_parameters.nShots;
                 
                 %% Send image
                 connection.send(image_saved);
