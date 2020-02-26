@@ -5,14 +5,13 @@ disp("Matlab SPEN buffer reconstruction running.")
 addpath('/home/mygadg/Documents/MATLAB/SPEN_Gadgetron_4');
 Parameters = struct;
 
-%% determine the number of repetitions, not ideal solution....
-Nsegments = round(connection.header.userParameters.userParameterLong(1,2).value/connection.header.encoding.encodingLimits.kspace_encoding_step_1.maximum); 
-Nset = (connection.header.encoding.encodingLimits.set.maximum+1)/Nsegments;
-
-%% loop over the repetitions while keeping the constant parameter (in the Parameters structure)
-for ind = 1:Nset
-    next_acquisition = @connection.next;
-    [Parameters] = reconstruct_SPEN(next_acquisition,connection,Parameters);
+%   connection.next(); % Discard the first acquisition - it's noise data.
+try
+    while true
+        next_acquisition = @connection.next;
+        [Parameters] = reconstruct_SPEN(next_acquisition,connection,Parameters);
+    end
+catch ME
+    if ~strcmp(ME.identifier, 'Connection:noNextItem'), rethrow(ME); end
 end
-
 end

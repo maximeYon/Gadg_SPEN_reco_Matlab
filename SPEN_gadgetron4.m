@@ -10,12 +10,13 @@ disp("handle_connection was called.")
 
 Parameters = struct;
 %   connection.next(); % Discard the first acquisition - it's noise data.
-
-Nsegments = round(connection.header.userParameters.userParameterLong(1,2).value/connection.header.encoding.encodingLimits.kspace_encoding_step_1.maximum); 
-Nset = (connection.header.encoding.encodingLimits.set.maximum+1)/Nsegments;
-for ind = 1:Nset
-next_acquisition = @connection.next;
-[Parameters] = reconstruct_image(next_acquisition,connection,Parameters);
+try
+    while true
+        next_acquisition = @connection.next;
+        [Parameters] = reconstruct_image(next_acquisition,connection,Parameters);
+    end
+catch ME
+    if ~strcmp(ME.identifier, 'Connection:noNextItem'), rethrow(ME); end
 end
 end
 
