@@ -1,0 +1,21 @@
+#!/bin/bash
+
+#DATA=RAW_EPI/meas_MID00106_FID14252_SPEN_diff_post_1seg.h5
+#DATA=RAW_EPI/meas_MID00108_FID14254_SPEN_diff_post_3seg.h5
+DATA=RAW_EPI/meas_MID00110_FID14256_SPEN_diff_post_4seg.h5
+
+rm -f out.h5
+####################################################################
+#                               Gadgetron v3.17- SPEN
+####################################################################
+CONFIG=SPEN_matlab.xml
+gadgetron_ismrmrd_client -c ${CONFIG} -f ${DATA}
+
+
+
+####################################################################
+#                               Gadgetron v4.0- SPEN
+####################################################################
+#CONFIG=external_matlab_buffer_SPEN.xml
+#gadgetron_ismrmrd_client -p 9002 -f ${DATA} -o out.h5 -c ${CONFIG}
+

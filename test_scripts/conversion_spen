@@ -1,0 +1,21 @@
+#!/bin/bash
+
+INPUT=RAW_EPI/meas_MID00110_FID14256_SPEN_diff_post_4seg.dat
+#INPUT=RAW_EPI/meas_MID00108_FID14254_SPEN_diff_post_3seg.dat
+#IINPUT=RAW_EPI/meas_MID00106_FID14252_SPEN_diff_post_1seg.dat
+
+echo $INPUT
+
+OUTPUT=$(echo ${INPUT} | sed "s/.dat/.h5/g")
+echo $OUTPUT
+
+OUTPUT_NOISE=$(echo ${OUTPUT} | sed "s/FID/NOISE/g") 
+echo $OUTPUT_NOISE
+
+rm ${OUTPUT_NOISE}
+rm ${OUTPUT}
+
+siemens_to_ismrmrd -m IsmrmrdParameterMap_Siemens_SPEN.xml -x IsmrmrdParameterMap_Siemens_SPEN.xsl -f ${INPUT} -o ${OUTPUT_NOISE} -z 1
+siemens_to_ismrmrd -m IsmrmrdParameterMap_Siemens_SPEN.xml -x IsmrmrdParameterMap_Siemens_SPEN.xsl -f ${INPUT} -o ${OUTPUT} -z 2
+#siemens_to_ismrmrd -m IsmrmrdParameterMap_Siemens_SPEN.xml -x IsmrmrdParameterMap_Siemens_SPEN.xsl -f ${INPUT} -o ${OUTPUT}
+
