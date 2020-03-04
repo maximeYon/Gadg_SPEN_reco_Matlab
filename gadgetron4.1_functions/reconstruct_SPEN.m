@@ -13,7 +13,7 @@ tic
 %% used for deconvolution of all sets
 if counter==0
     addpath('/usr/local/share/ismrmrd/matlab')
-    addpath(genpath('/home/mygadg/Documents/MATLAB/SPEN_Gadgetron_4/SPEN_Gadgetron_Reco/SPEN_Siemens_Recon/'))
+    addpath(genpath('/home/mygadg/Code/Gadg_SPEN_reco_Matlab/SPEN_Gadgetron_Reco/SPEN_Siemens_Recon/'))
     
     %% Retrieve common parameters and store them in acq_header. structure
     
@@ -202,43 +202,51 @@ end
             Parameters.SPEN_parameters = acq_header.SPEN_parameters;
             
             %% create suitable header for each slice
-                 img_head = ismrmrd.ImageHeader;
+               %  img_head = ismrmrd.ImageHeader;
                 
                 %% Set the good header parameters for all slices 
                 idx_data = find(image.bits.buffer.headers.kspace_encode_step_1 ~= 0);
                 idx_data = idx_data(1,1);
-                [~,idx_2,idx_3,idx_4,idx_5,idx_6] = ind2sub(size(image.bits.buffer.headers.kspace_encode_step_1),idx_data);
+                [~, idx_2, idx_3, idx_4, idx_5, idx_6] = ind2sub(size(image.bits.buffer.headers.kspace_encode_step_1),idx_data);
                 
-                img_head.matrix_size(1) = size(SPEN_Image,1);
-                img_head.matrix_size(2) = size(SPEN_Image,2);
-                img_head.matrix_size(3) = 1; % the slices are saved 1 by 1
-                               
-                img_head.read_dir = image.bits.buffer.headers.read_dir(:,idx_2,idx_3,idx_4,idx_5,idx_6);
-                img_head.phase_dir = image.bits.buffer.headers.phase_dir(:,idx_2,idx_3,idx_4,idx_5,idx_6);
-                img_head.slice_dir = image.bits.buffer.headers.slice_dir(:,idx_2,idx_3,idx_4,idx_5,idx_6);
-                img_head.patient_table_position = image.bits.buffer.headers.patient_table_position(:,idx_2,idx_3,idx_4,idx_5,idx_6);
-                img_head.acquisition_time_stamp = image.bits.buffer.headers.acquisition_time_stamp(:,idx_2,idx_3,idx_4,idx_5,idx_6);
-                img_head.image_series_index = 0;
-                img_head.channels = 1;
-                img_head.data_type= select_data_type(SPEN_Image);
+%                 img_head.matrix_size(1) = size(SPEN_Image,1);
+%                 img_head.matrix_size(2) = size(SPEN_Image,2);
+%                 img_head.matrix_size(3) = 1; % the slices are saved 1 by 1
+%                                
+%                 img_head.read_dir = image.bits.buffer.headers.read_dir(:,idx_2,idx_3,idx_4,idx_5,idx_6);
+%                 img_head.phase_dir = image.bits.buffer.headers.phase_dir(:,idx_2,idx_3,idx_4,idx_5,idx_6);
+%                 img_head.slice_dir = image.bits.buffer.headers.slice_dir(:,idx_2,idx_3,idx_4,idx_5,idx_6);
+%                 img_head.patient_table_position = image.bits.buffer.headers.patient_table_position(:,idx_2,idx_3,idx_4,idx_5,idx_6);
+%                 img_head.acquisition_time_stamp = image.bits.buffer.headers.acquisition_time_stamp(:,idx_2,idx_3,idx_4,idx_5,idx_6);
+%                 img_head.image_series_index = 0;
+%                 img_head.channels = 1;
+%                 img_head.data_type= select_data_type(SPEN_Image);
+                index = {idx_2, idx_3, idx_4, idx_5, idx_6};
+                reference = structfun(@(arr) arr(:, index{:}), image.bits.buffer.headers, 'UniformOutput', false);
                 
                  %% Set the good header parameters for each slice 
                 
                 for s = 1:size(SPEN_Image,4)
-                 img_head.image_index(s) = (s+(counter-1)*s)*1000; %g.image_num;
+%                  img_head.image_index(s) = (s+(counter-1)*s)*1000; %g.image_num;
                  idx_Encode = find(image.bits.buffer.headers.kspace_encode_step_1 ~= 0);
                  idx_Slice = find(image.bits.buffer.headers.slice==s-1);
                  idx_data = intersect(idx_Encode,idx_Slice);
                  idx_data = idx_data(1,1);
                  [~,idx_2,idx_3,idx_4,idx_5,idx_6] = ind2sub(size(image.bits.buffer.headers.kspace_encode_step_1),idx_data);
-                 img_head.position = image.bits.buffer.headers.position(:,idx_2,idx_3,idx_4,idx_5,idx_6);  
-
+%                  img_head.position = image.bits.buffer.headers.position(:,idx_2,idx_3,idx_4,idx_5,idx_6);  
+                position = image.bits.buffer.headers.position(:,idx_2,idx_3,idx_4,idx_5,idx_6);
+                
                 %% Prepare image.data and image.header
                 % manually initialize the image object with img_head
                 %image_saved = gadgetron.types.Image(img_head, '', SPEN_Image(:, :, :, s));
                 % Or automatically create the header,but do not fill every field
-                image_saved = gadgetron.types.Image.from_data(SPEN_Image(:,:,:,s),img_head);
+%                 image_saved = gadgetron.types.Image.from_data(SPEN_Image(:,:,:,s),img_head);
+%                 image_saved.header.image_type = gadgetron.types.Image.MAGNITUDE;
+
+		% The image need to be single to fit the AutoScale gadget 
+                image_saved = gadgetron.types.Image.from_data(single(SPEN_Image(:,:,:,s)), reference);
                 image_saved.header.image_type = gadgetron.types.Image.MAGNITUDE;
+                image_saved.header.position = position;
                 
                 %% re-write some header fields
                 image_saved.header.field_of_view(1) = acq_header.SPEN_parameters.FOV(1,1);

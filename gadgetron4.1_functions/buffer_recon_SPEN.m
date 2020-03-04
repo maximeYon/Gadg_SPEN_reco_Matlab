@@ -2,7 +2,7 @@ function buffer_recon_SPEN(connection) % 'Buffer' is a colloquial name for Recon
 disp("Matlab SPEN buffer reconstruction running.")
 
 %% Add to path location of reconstruct_SPEN function
-addpath('/home/mygadg/Documents/MATLAB/SPEN_Gadgetron_4');
+addpath('/home/mygadg/Code/Gadg_SPEN_reco_Matlab/gadgetron4.1_functions');
 Parameters = struct;
 
 %   connection.next(); % Discard the first acquisition - it's noise data.
