@@ -619,6 +619,147 @@ xmlns:xsl="http://www.w3.org/1999/XSL/Transform">
                             <xsl:value-of select="siemens/MEAS/sWipMemBlock/alFree[12]" />
                           </value>
  			 </userParameterLong>
+
+                        <userParameterLong>
+                          <name>RO_pFT</name>
+                          <value>
+                            <xsl:value-of select="siemens/MEAS/sWipMemBlock/adFree[9] div 0.01" />
+                          </value>
+ 			 </userParameterLong>
+
+                        <userParameterLong>
+                          <name>number_of_bdirections</name>
+                          <value>
+                            <xsl:value-of select="siemens/MEAS/sDiffusion/lDiffDirections" />
+                          </value>
+ 			 </userParameterLong>
+
+                        <userParameterLong>
+                          <name>number_of_bvalues</name>
+                          <value>
+                            <xsl:value-of select="siemens/MEAS/sDiffusion/lDiffWeightings" />
+                          </value>
+ 			 </userParameterLong>
+
+                        <userParameterLong>
+                          <name>bvalues_0</name>
+                          <value>
+                            <xsl:value-of select="siemens/MEAS/sDiffusion/alBvalue[0]" />
+                          </value>
+ 			 </userParameterLong>
+
+                        <userParameterLong>
+                          <name>bvalues_1</name>
+                          <value>
+                            <xsl:value-of select="siemens/MEAS/sDiffusion/alBvalue[1]" />
+                          </value>
+ 			 </userParameterLong>
+
+                        <userParameterLong>
+                          <name>bvalues_2</name>
+                          <value>
+                            <xsl:value-of select="siemens/MEAS/sDiffusion/alBvalue[2]" />
+                          </value>
+ 			 </userParameterLong>
+
+                        <userParameterLong>
+                          <name>bvalues_3</name>
+                          <value>
+                            <xsl:value-of select="siemens/MEAS/sDiffusion/alBvalue[3]" />
+                          </value>
+ 			 </userParameterLong>
+
+                        <userParameterLong>
+                          <name>bvalues_4</name>
+                          <value>
+                            <xsl:value-of select="siemens/MEAS/sDiffusion/alBvalue[4]" />
+                          </value>
+ 			 </userParameterLong>
+
+                        <userParameterLong>
+                          <name>bvalues_5</name>
+                          <value>
+                            <xsl:value-of select="siemens/MEAS/sDiffusion/alBvalue[5]" />
+                          </value>
+ 			 </userParameterLong>
+
+                        <userParameterLong>
+                          <name>bvalues_6</name>
+                          <value>
+                            <xsl:value-of select="siemens/MEAS/sDiffusion/alBvalue[6]" />
+                          </value>
+ 			 </userParameterLong>
+
+                        <userParameterLong>
+                          <name>bvalues_7</name>
+                          <value>
+                            <xsl:value-of select="siemens/MEAS/sDiffusion/alBvalue[7]" />
+                          </value>
+ 			 </userParameterLong>
+
+                        <userParameterLong>
+                          <name>bvalues_8</name>
+                          <value>
+                            <xsl:value-of select="siemens/MEAS/sDiffusion/alBvalue[8]" />
+                          </value>
+ 			 </userParameterLong>
+
+                        <userParameterLong>
+                          <name>bvalues_9</name>
+                          <value>
+                            <xsl:value-of select="siemens/MEAS/sDiffusion/alBvalue[9]" />
+                          </value>
+ 			 </userParameterLong>
+
+                        <userParameterLong>
+                          <name>bvalues_10</name>
+                          <value>
+                            <xsl:value-of select="siemens/MEAS/sDiffusion/alBvalue[10]" />
+                          </value>
+ 			 </userParameterLong>
+
+                        <userParameterLong>
+                          <name>bvalues_11</name>
+                          <value>
+                            <xsl:value-of select="siemens/MEAS/sDiffusion/alBvalue[11]" />
+                          </value>
+ 			 </userParameterLong>
+
+                        <userParameterLong>
+                          <name>bvalues_12</name>
+                          <value>
+                            <xsl:value-of select="siemens/MEAS/sDiffusion/alBvalue[12]" />
+                          </value>
+ 			 </userParameterLong>
+
+                        <userParameterLong>
+                          <name>bvalues_13</name>
+                          <value>
+                            <xsl:value-of select="siemens/MEAS/sDiffusion/alBvalue[13]" />
+                          </value>
+ 			 </userParameterLong>
+
+                        <userParameterLong>
+                          <name>bvalues_14</name>
+                          <value>
+                            <xsl:value-of select="siemens/MEAS/sDiffusion/alBvalue[14]" />
+                          </value>
+ 			 </userParameterLong>
+
+                        <userParameterLong>
+                          <name>bvalues_15</name>
+                          <value>
+                            <xsl:value-of select="siemens/MEAS/sDiffusion/alBvalue[15]" />
+                          </value>
+ 			 </userParameterLong>
+
+                        <userParameterLong>
+                          <name>bvalues_averages</name>
+                          <value>
+                            <xsl:value-of select="siemens/MEAS/sDiffusion/alAverages[0]" />
+                          </value>
+ 			 </userParameterLong>
+
 		 </userParameters>
 
         </ismrmrdHeader>

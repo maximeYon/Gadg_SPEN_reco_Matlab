@@ -139,7 +139,7 @@ addpath(genpath('/home/mygadg/Documents/MATLAB/SPEN_Gadgetron_Reco/SPEN_Siemens_
 % CmplxData = zeros(120,120,12,3,1,1,13);
 
 %% user parameter
-TVW_L2.Final=0.15;  % Weight for L2 regularization for final reconstruction
+TVW_L2.Final=0.1;  % Weight for L2 regularization for final reconstruction
 TVW_L2.EO=0.6;  % Weight for L2 regularization for reconstruction of even and odd images used to determine EO phase correction
 TVW_L2.ImgPerShot=0.6;  % Weight for L2 regularization for reconstruction of per-shot images used to perform motion correction
 TresholdCC=0.15; % Threshold to determine to how many coils to compress the data
