@@ -3,7 +3,8 @@
 #DATA=RAW/meas_MID00106_FID14252_SPEN_diff_post_1seg.h5
 #DATA=RAW/meas_MID00108_FID14254_SPEN_diff_post_3seg.h5
 #DATA=/home/mygadg/Data/RAW/meas_MID00110_FID14256_SPEN_diff_post_4seg.h5
-DATA=/home/mygadg/Data/RAW/meas_MID00413_FID50937_mo_SPEN_diff_gadg_4scan_tr_b01000_1p2x1p2x2_pFT_0p75.h5
+#DATA=/home/mygadg/Data/RAW/meas_MID00413_FID50937_mo_SPEN_diff_gadg_4scan_tr_b01000_1p2x1p2x2_pFT_0p75.h5
+DATA=/home/mygadg/Data/RAW/meas_MID00280_FID51527_mo_SPEN_diff_gadg_4scan_tr_b01000_1p2x1p2x2_no_pFT_192x192.h5
 
 rm -f out.h5
 ####################################################################
