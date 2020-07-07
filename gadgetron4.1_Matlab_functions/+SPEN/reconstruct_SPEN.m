@@ -14,7 +14,7 @@ tic
 if counter==0
     addpath('/usr/local/share/ismrmrd/matlab')
     %addpath(genpath([pwd filesep 'SPEN_Gadgetron_Reco']));
-    addpath(genpath('/home/mygadg/Code/Gadg_SPEN_reco_Matlab/gadgetron4.1_Matlab_functions/+SPEN/SPEN_Gadgetron_Reco/'));
+    addpath(genpath('/home/mygadg/Code/Gadg_SPEN_reco_Matlab/gadgetron4.1_Matlab_functions/SPEN_Gadgetron_Reco'));
     
     %% Retrieve common parameters and store them in acq_header. structure
     
@@ -40,6 +40,12 @@ if counter==0
     %     acq_header.SPEN_parameters.nShots = acq_header.SPEN_parameters.Nseg;
     acq_header.SPEN_parameters.nShots = acq_header.SPEN_parameters.Nky/acq_header.SPEN_parameters.Enc1;
     acq_header.SPEN_parameters.repetition = acq_header.SPEN_parameters.set/acq_header.SPEN_parameters.nShots;
+    if isfield(acq_header.SPEN_parameters,'RO_pFT')==1
+        acq_header.SPEN_parameters.RO_pFT = acq_header.SPEN_parameters.RO_pFT./100;
+    else
+        acq_header.SPEN_parameters.RO_pFT =1;
+    end
+    
     clearvars ind
     
     %% Adapt specific SPEN parameters
@@ -141,13 +147,8 @@ CmplxData = permute(CmplxData,[2 1 3 4 5 6 7]);
 CmplxData = PEShiftingDataset(CmplxData,-acq_header.SPEN_parameters.PEShift,acq_header.SPEN_parameters.LPE,acq_header.SPEN_parameters.nShots);
 
 %% pFT test and fill - mo
-%if isfield(g.SPEN_parameters,RO_pFT)
-%pFT=1;
-pFT=g.SPEN_parameters.RO_pFT/100;
-disp([' pFT = ' num2str(pFT)])
-
-if pFT<1.0
-    CmplxData=pFT_Pad(CmplxData,pFT);
+if acq_header.SPEN_parameters.RO_pFT<1.0
+    CmplxData=pFT_Pad(CmplxData,acq_header.SPEN_parameters.RO_pFT);
 end
 
 %% Coil Compression
@@ -169,7 +170,7 @@ end
 % Description of the workflow given inside the script. You might want to
 % change L2 weight.
 if acq_header.SPEN_parameters.nShots==1
-    [SPEN_Image]=function_OneShotReconstruction(CmplxData,g.SPEN_parameters.gccmtx_aligned_finalx,g.SPEN_parameters.nccx,g.FinalAFull,g.SPEN_parameters,pFT);
+    [SPEN_Image]=function_OneShotReconstruction(CmplxData,acq_header.SPEN_parameters.gccmtx_aligned_finalx,acq_header.SPEN_parameters.nccx,acq_header.FinalAFull,acq_header.SPEN_parameters,acq_header.SPEN_parameters.RO_pFT);
     % OneShotReconstruction
 else
     %% Determine SENS map, as well as EO map
@@ -182,7 +183,7 @@ else
         [acq_header.SPEN_parameters.EvenOddMapStoredBySlices, acq_header.SPEN_parameters.FinalB0Recon]=SensAndEOMapFromB0(CmplxData, acq_header.FinalAFull, acq_header.SPEN_parameters.gccmtx_aligned_finalx, acq_header.SPEN_parameters.nccx, acq_header.SPEN_parameters.nShots,acq_header.SPEN_parameters.RepsToDoEOAndB0,acq_header.SPEN_parameters.TVW_L2);
     end
     %% Final reconstruction
-    [SPEN_Image]=FinalReconstruction(CmplxData, g.SPEN_parameters.gccmtx_aligned_finalx, g.SPEN_parameters.nccx, g.SPEN_parameters.EvenOddMapStoredBySlices, g.FinalA, g.FinalAFull, g.SPEN_parameters.FinalB0Recon, g.SPEN_parameters.nShots, g.SPEN_parameters.TVW_L2, g.SPEN_parameters.DoMotionCorrection,pFT);
+    [SPEN_Image]=FinalReconstruction(CmplxData, acq_header.SPEN_parameters.gccmtx_aligned_finalx, acq_header.SPEN_parameters.nccx, acq_header.SPEN_parameters.EvenOddMapStoredBySlices, acq_header.FinalA, acq_header.FinalAFull, acq_header.SPEN_parameters.FinalB0Recon, acq_header.SPEN_parameters.nShots, acq_header.SPEN_parameters.TVW_L2, acq_header.SPEN_parameters.DoMotionCorrection,acq_header.SPEN_parameters.RO_pFT);
 end
 
 SPEN_Image=permute(SPEN_Image, [2,1,3]);
@@ -190,8 +191,8 @@ SPEN_Image = flip(flip(SPEN_Image,2),1);
 
 %% Siemens love square matrices, we need to regrid to acq_header.encoding.encodedSpace.matrixSize.y
 % This works only if the current matrice is smaller
-if size(SPEN_Image,2) < g.xml.encoding.encodedSpace.matrixSize.y
-    diff_Npoints = g.xml.encoding.encodedSpace.matrixSize.y-size(SPEN_Image,2);
+if size(SPEN_Image,2) < acq_header.encoding.encodedSpace.matrixSize.y
+    diff_Npoints = acq_header.encoding.encodedSpace.matrixSize.y-size(SPEN_Image,2);
     if mod(diff_Npoints,2) ==0 % pair
         mat_ZF = zeros(size(SPEN_Image,1),diff_Npoints/2,size(SPEN_Image,3));
         SPEN_Image = FFTKSpace2XSpace(cat(2,mat_ZF,FFTXSpace2KSpace(SPEN_Image,2),mat_ZF),2);
@@ -213,7 +214,12 @@ elseif size(SPEN_Image,1) < size(SPEN_Image,2)
     
 end
 
-SPEN_Image=uint16(4096*0.99*abs(SPEN_Image)/g.SPEN_parameters.max_intensity);
+% Normalisation of the SPEN images (on the first one: b0 in diff)
+if counter==1
+    acq_header.SPEN_parameters.max_intensity=max(abs(SPEN_Image(:)));
+end
+SPEN_Image=uint16(4096*0.99*abs(SPEN_Image)/acq_header.SPEN_parameters.max_intensity);
+
 SPEN_Image = single(SPEN_Image);
 SPEN_Image = reshape(SPEN_Image,1,size(SPEN_Image,1),size(SPEN_Image,2),size(SPEN_Image,3));
 
@@ -253,7 +259,7 @@ for s = 1:size(SPEN_Image,4)
     idx_data = idx_data(1,1);
     [~,idx_2,idx_3,idx_4,idx_5,idx_6] = ind2sub(size(image.bits.buffer.headers.kspace_encode_step_1),idx_data);
     img_head.position = image.bits.buffer.headers.position(:,idx_2,idx_3,idx_4,idx_5,idx_6);
-    %                  img_head.position(:,s) = image.bits.buffer.headers.position(:,idx_2,idx_3,idx_4,idx_5,idx_6);
+    % img_head.position(:,s) = image.bits.buffer.headers.position(:,idx_2,idx_3,idx_4,idx_5,idx_6);
     
     %% Prepare image.data
     image_saved = gadgetron.types.Image.from_data(abs(SPEN_Image(:,:,:,s)),img_head);

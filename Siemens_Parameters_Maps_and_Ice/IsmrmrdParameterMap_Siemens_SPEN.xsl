@@ -617,14 +617,14 @@ xmlns:xsl="http://www.w3.org/1999/XSL/Transform">
                         <userParameterLong>
                           <name>Nseg</name>
                           <value>
-                            <xsl:value-of select="siemens/MEAS/sWipMemBlock/alFree[12]" />
+                            <xsl:value-of select="siemens/MEAS/sWipMemBlock/alFree[9]" />
                           </value>
  			 </userParameterLong>
 
                         <userParameterLong>
                           <name>RO_pFT</name>
                           <value>
-                            <xsl:value-of select="siemens/MEAS/sWipMemBlock/adFree[9] div 0.01" />
+                            <xsl:value-of select="siemens/MEAS/sWipMemBlock/adFree[11] div 0.01" />
                           </value>
  			 </userParameterLong>
 
