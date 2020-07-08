@@ -120,9 +120,9 @@
         <p><s>MEAS.sDiffusion.alBValue</s>                                      <d>siemens.MEAS.sDiffusion.alBValue</d></p>
 
         <!-- diffusion weighted imaging parameter added by mo -->
-<!--        <p><s>MEAS.sDiffusion.alAverages</s>                         	        <d>siemens.PHOENIX.sDiffusion.alAverages</d></p>
-        <p><s>MEAS.sDiffusion.lDiffWeightings</s>                               <d>siemens.PHOENIX.sDiffusion.lDiffWeightings</d></p>
-        <p><s>MEAS.sDiffusion.dsScheme</s>                               	<d>siemens.PHOENIX.sDiffusion.dsScheme</d></p> -->
+        <p><s>MEAS.sDiffusion.alAverages</s>                         	        <d>siemens.MEAS.sDiffusion.alAverages</d></p>
+        <p><s>MEAS.sDiffusion.lDiffWeightings</s>                               <d>siemens.MEAS.sDiffusion.lDiffWeightings</d></p>
+        <p><s>MEAS.sDiffusion.dsScheme</s>                               	<d>siemens.MEAS.sDiffusion.dsScheme</d></p>
 
         <!-- user defined parameter -->
         <p><s>MEAS.sProtConsistencyInfo.tBaselineString</s>                     <d>siemens.MEAS.sProtConsistencyInfo.tBaselineString</d></p>

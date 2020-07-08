@@ -628,41 +628,65 @@ xmlns:xsl="http://www.w3.org/1999/XSL/Transform">
                           </value>
  			 </userParameterLong>
 
-<!--                         <userParameterLong>
-                          <name>diff_directions</name>
-                          <value>            
+                       <userParameterLong>
+                         <name>DiffDirections</name>
+                          <value>
                             <xsl:value-of select="siemens/MEAS/sDiffusion/lDiffDirections"/>
                           </value>
- 			 </userParameterLong>
+                        </userParameterLong>
 
                         <userParameterLong>
                           <name>bvalues</name>
                           <value>            
-                            <xsl:value-of select="siemens/MEAS/sDiffusion/alBValue"/>
+                            <xsl:value-of select="siemens/MEAS/sDiffusion/alBValue[2]"/>
                           </value>
  			 </userParameterLong>
+              
+               <!-- <xsl:for-each select="$siemens/MEAS/sDiffusion/alBValue">
+                    <xsl:if test=". &gt; 0">
+                        <bvaluesList>
+                            <xsl:value-of select="." />
+                        </bvaluesList>
+                     </xsl:if>
+                 </xsl:for-each> -->
+
+                       <!--<userParameterLong>
+                          <name>bvaluesList</name>
+                          <value>            
+                             <xsl:for-each select="siemens/MEAS/sDiffusion/alBValue">
+                                 <xsl:variable name="CurBval" select="position()"/>
+                                    <xsl:value-of select="siemens/MEAS/sDiffusion/alBValue[$CurBval]"/>
+                             </xsl:for-each>
+                          </value>
+ 			 </userParameterLong> -->
+
+                         <!--<userParameterLong>
+                          <name>bvaluesList</name>
+                          <value>            
+                             <xsl:for-each select="siemens/MEAS/sDiffusion/alBValue">
+                                  <xsl:value-of select="siemens/MEAS/sDiffusion/alBValue"/>
+                             </xsl:for-each>
+                          </value>
+ 			 </userParameterLong> -->
 
                         <userParameterLong>
-                          <name>averages_per_bvalue</name>
+                          <name>DiffAverages</name>
                           <value>            
                             <xsl:value-of select="siemens/MEAS/sDiffusion/alAverages"/>
                           </value>
  			 </userParameterLong>
-
-                        <userParameterLong>
-                          <name>number_of_bvalues</name>
+                         <userParameterLong>
+                          <name>DiffWeightings</name>
                           <value>            
                             <xsl:value-of select="siemens/MEAS/sDiffusion/lDiffWeightings"/>
                           </value>
  			 </userParameterLong>
-
-                        <userParameterLong>
-                          <name>b_value_scheme</name>
+                         <userParameterLong>
+                          <name>DiffScheme</name>
                           <value>            
                             <xsl:value-of select="siemens/MEAS/sDiffusion/dsScheme"/>
                           </value>
- 			 </userParameterLong> -->
-
+ 			 </userParameterLong>
 
 		 </userParameters>
 
