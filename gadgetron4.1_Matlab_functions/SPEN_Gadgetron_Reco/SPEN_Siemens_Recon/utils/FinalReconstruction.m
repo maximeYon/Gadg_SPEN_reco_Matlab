@@ -52,7 +52,7 @@ end
 L2image=zeros(Npe,size(CCCmplxDataS1,2),nSlices,nWeight,nReps);
 
 if mod(nShots,2)==1
-    if nSlices>2
+    if nSlices>3
         parfor_arg =Inf;
     else
         parfor_arg = 0;
@@ -161,7 +161,7 @@ if mod(nShots,2)==1
         
     end
 else
-    if nSlices>2
+    if nSlices>3
         parfor_arg =Inf;
     else
         parfor_arg = 0;
