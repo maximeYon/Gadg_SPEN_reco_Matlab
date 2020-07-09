@@ -15,7 +15,7 @@ function [L2image] = function_OneShotReconstruction(CmplxDataSh,gccmtx_aligned_f
 % reconstructed by simple multiplication with Superresolution matrix.
 % 7) Reconstruct image with some L2 regularization.
 %% Addapted for only one bval and function type
-nWeight = size(CCurCmplxDataSx,6);
+nWeight = size(CmplxDataSh,6);
 nSlices = parameters.nSlices;
 TVW_L2 = parameters.TVW_L2;
 Npe = parameters.Npe;

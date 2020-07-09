@@ -287,7 +287,6 @@ if counter==Parameters.SPEN_parameters.repetition
     ADC_Images = single(ADC_Images);
     ADC_Images = reshape(ADC_Images,1,size(ADC_Images,1),size(ADC_Images,2),size(ADC_Images,3));
     %% Send ADC images
-    img_head.image_series_index = 5000;
     for s = 1:size(ADC_Images,4)
         img_head.image_index(s) = s+((counter)*s)*1000; %g.image_num;
         idx_Encode = find(image.bits.buffer.headers.kspace_encode_step_1 ~= 0);
@@ -306,6 +305,7 @@ if counter==Parameters.SPEN_parameters.repetition
         image_saved.header.field_of_view(1,3) = acq_header.SPEN_parameters.FOV(1,3);
         
         image_saved.header.image_type = gadgetron.types.Image.MAGNITUDE;
+        image_saved.header.image_series_index = 5000;
         
         %% Send image
         connection.send(image_saved);
