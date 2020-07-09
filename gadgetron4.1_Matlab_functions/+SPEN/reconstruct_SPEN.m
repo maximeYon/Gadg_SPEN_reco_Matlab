@@ -13,7 +13,6 @@ tic
 %% used for deconvolution of all sets
 if counter==0
     addpath('/usr/local/share/ismrmrd/matlab')
-    %addpath(genpath([pwd filesep 'SPEN_Gadgetron_Reco']));
     addpath(genpath('/home/mygadg/Code/Gadg_SPEN_reco_Matlab/gadgetron4.1_Matlab_functions/SPEN_Gadgetron_Reco'));
     
     %% Retrieve common parameters and store them in acq_header. structure
@@ -246,20 +245,20 @@ img_head.phase_dir = image.bits.buffer.headers.phase_dir(:,idx_2,idx_3,idx_4,idx
 img_head.slice_dir = image.bits.buffer.headers.slice_dir(:,idx_2,idx_3,idx_4,idx_5,idx_6);
 img_head.patient_table_position = image.bits.buffer.headers.patient_table_position(:,idx_2,idx_3,idx_4,idx_5,idx_6);
 img_head.acquisition_time_stamp = image.bits.buffer.headers.acquisition_time_stamp(:,idx_2,idx_3,idx_4,idx_5,idx_6);
-img_head.image_series_index = 0;
 img_head.channels = 1;
 img_head.data_type= 5;
 
 %% Set the good header parameters for each slice
 for s = 1:size(SPEN_Image,4)
-    img_head.image_index(s) = s+((counter-1)*s)*1000; %g.image_num;
     idx_Encode = find(image.bits.buffer.headers.kspace_encode_step_1 ~= 0);
     idx_Slice = find(image.bits.buffer.headers.slice==s-1);
     idx_data = intersect(idx_Encode,idx_Slice);
     idx_data = idx_data(1,1);
     [~,idx_2,idx_3,idx_4,idx_5,idx_6] = ind2sub(size(image.bits.buffer.headers.kspace_encode_step_1),idx_data);
     img_head.position = image.bits.buffer.headers.position(:,idx_2,idx_3,idx_4,idx_5,idx_6);
-    % img_head.position(:,s) = image.bits.buffer.headers.position(:,idx_2,idx_3,idx_4,idx_5,idx_6);
+    img_head.slice = image.bits.buffer.headers.slice(:,idx_2,idx_3,idx_4,idx_5,idx_6);
+    % Unfortunatly this do not correct the slice position in case of
+    % acquisition "entrelacé" (interleaved).
     
     %% Prepare image.data
     image_saved = gadgetron.types.Image.from_data(abs(SPEN_Image(:,:,:,s)),img_head);
@@ -270,6 +269,8 @@ for s = 1:size(SPEN_Image,4)
     image_saved.header.field_of_view(1,3) = acq_header.SPEN_parameters.FOV(1,3);
     
     image_saved.header.image_type = gadgetron.types.Image.MAGNITUDE;
+    image_saved.header.image_series_index = 1000;
+    image_saved.header.image_index = s+((counter-1)*Parameters.SPEN_parameters.nSlices)+1000;
     
     %% Send image
     connection.send(image_saved);
