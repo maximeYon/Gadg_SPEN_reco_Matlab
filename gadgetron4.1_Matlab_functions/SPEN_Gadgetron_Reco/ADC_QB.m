@@ -67,6 +67,6 @@ for iSlice=1:matrix_size(3)
     
 %     FinalADCMap(:,:,iSlice)=ADC;
     FinalADCMap(:,:,iSlice)=ADCFmin;
-    FinalADCMapRaw(:,:,iSlice)=ADC;
+    FinalADCMapRaw(:,:,iSlice)=ADC.*1e6;
     
 end

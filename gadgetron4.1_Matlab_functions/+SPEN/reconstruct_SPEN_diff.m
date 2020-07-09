@@ -274,13 +274,41 @@ for s = 1:size(SPEN_Image,4)
     
     %% Send image
     connection.send(image_saved);
+end
+%% ADC calculations
+if counter==Parameters.SPEN_parameters.repetition
+%     Parameters.SPEN_parameters.bvalues
+    bvalues = [0 1000];
+    [ADC_Images]=ADC_QB(Parameters.SPENimages, bvalues);
     
-    %% ADC calculations
-    if counter==Parameters.SPEN_parameters.repetition
-        ADC =1;
+    % Normalisation and reshape
+    ADC_Images=uint16(4096*0.99*abs(ADC_Images)/max(ADC_Images(:)));
+    
+    ADC_Images = single(ADC_Images);
+    ADC_Images = reshape(ADC_Images,1,size(ADC_Images,1),size(ADC_Images,2),size(ADC_Images,3));
+    %% Send ADC images
+    img_head.image_series_index = 5000;
+    for s = 1:size(ADC_Images,4)
+        img_head.image_index(s) = s+((counter)*s)*1000; %g.image_num;
+        idx_Encode = find(image.bits.buffer.headers.kspace_encode_step_1 ~= 0);
+        idx_Slice = find(image.bits.buffer.headers.slice==s-1);
+        idx_data = intersect(idx_Encode,idx_Slice);
+        idx_data = idx_data(1,1);
+        [~,idx_2,idx_3,idx_4,idx_5,idx_6] = ind2sub(size(image.bits.buffer.headers.kspace_encode_step_1),idx_data);
+        img_head.position = image.bits.buffer.headers.position(:,idx_2,idx_3,idx_4,idx_5,idx_6);
         
+        %% Prepare image.data
+        image_saved = gadgetron.types.Image.from_data(abs(ADC_Images(:,:,:,s)),img_head);
+        
+        %% Prepare image.header
+        image_saved.header.field_of_view(1,1) = acq_header.SPEN_parameters.FOV(1,1);
+        image_saved.header.field_of_view(1,2) = acq_header.SPEN_parameters.FOV(1,2);
+        image_saved.header.field_of_view(1,3) = acq_header.SPEN_parameters.FOV(1,3);
+        
+        image_saved.header.image_type = gadgetron.types.Image.MAGNITUDE;
+        
+        %% Send image
+        connection.send(image_saved);
     end
-    
-    
 end
 end
