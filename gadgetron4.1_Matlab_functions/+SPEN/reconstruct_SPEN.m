@@ -250,6 +250,7 @@ img_head.channels = 1;
 img_head.data_type= 5;
 
 %% retrieve slice order from positions
+SliceShift = zeros(1,size(SPEN_Image,4));
 for s = 1:size(SPEN_Image,4)
     idx_Encode = find(image.bits.buffer.headers.kspace_encode_step_1 ~= 0);
     idx_Slice = find(image.bits.buffer.headers.slice==s-1);
@@ -260,10 +261,11 @@ for s = 1:size(SPEN_Image,4)
     RotatedPositions=acq_header.SPEN_parameters.RotMat  .'*Positions;
     SliceShift(1,s)=RotatedPositions(3,1);
 end
-Slice_order = sort(SliceShift);
+[~,Slice_order] = sort(SliceShift);
 
 %% Set the good header parameters for each slice
-for s = 1:size(SPEN_Image,4)
+slice_ind = 0;
+for s = 1:Slice_order
     idx_Encode = find(image.bits.buffer.headers.kspace_encode_step_1 ~= 0);
     idx_Slice = find(image.bits.buffer.headers.slice==s-1);
     idx_data = intersect(idx_Encode,idx_Slice);
@@ -284,8 +286,9 @@ for s = 1:size(SPEN_Image,4)
     
     image_saved.header.image_type = gadgetron.types.Image.MAGNITUDE;
     image_saved.header.image_series_index = 1000;
-    image_saved.header.image_index = s+((counter-1)*Parameters.SPEN_parameters.nSlices)+1000;
-    
+    slice_ind = slice_ind+1;
+    image_saved.header.image_index = slice_ind+((counter-1)*Parameters.SPEN_parameters.nSlices)+1000;
+        
     %% Send image
     connection.send(image_saved);
 end

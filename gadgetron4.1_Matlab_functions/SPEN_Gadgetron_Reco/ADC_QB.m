@@ -1,11 +1,5 @@
 function [FinalADCMapRaw]=ADC_QB(DiffImag, bvalues)
-% for i=1:size(bvalues,2)
-%     if isempty(bvalues{i})
-%         bvalues{i}=0;
-%     end
-% end
-% 
-% bvalues=cell2mat(bvalues);
+disp("Fitting ADC")
 matrix_size=size(DiffImag);
 Para.np=matrix_size(1);
 Para.nv=matrix_size(2);
@@ -39,6 +33,7 @@ ADC=zeros(Para.np,Para.nv);
 ADCFmin=zeros(Para.np,Para.nv);
 FinalADCMap=zeros(Para.np,Para.nv,matrix_size(3));
 FinalADCMapRaw=zeros(Para.np,Para.nv,matrix_size(3));
+options = optimset('Display','off');
 for iSlice=1:matrix_size(3)
     for m=1:Para.np
         for n=1:Para.nv
@@ -57,13 +52,13 @@ for iSlice=1:matrix_size(3)
 %             sumyresid=sum(yresid.^2);
 %             Sumtotal = (length(yfit)-1)* var(y);
             p0 = [exp(p(2)) p(1)];
-            P = fminsearch(errfh,p0,[],x,squeeze(abs(absiField(m,n,iSlice,:))));
+%             P = fminsearch(errfh,p0,[],x,squeeze(abs(absiField(m,n,iSlice,:))));
+            P = fminsearch(errfh,p0,options,x,squeeze(abs(absiField(m,n,iSlice,:))));
             ADCFmin(m,n)=P(2);
 %             rsq(m,n) = 1 - sumyresid/Sumtotal;
             end
         end
     end
-    
     
 %     FinalADCMap(:,:,iSlice)=ADC;
     FinalADCMap(:,:,iSlice)=ADCFmin;
