@@ -82,6 +82,7 @@ if counter==0
     PEShift=RotatedLocs(1,1);
     PEShiftSign=-1;
     acq_header.SPEN_parameters.PEShift=PEShiftSign*PEShift;
+    acq_header.SPEN_parameters.RotMat = RotMat; % store RotMat used to compute slice position
     clearvars RotMatread RotMatphase RotMatslice RotMat RotatedLocs PEShift PEShiftSign PosXYZ;
     
     %% Assign the parameters used for the Super-Resolution matrix
@@ -247,6 +248,19 @@ img_head.patient_table_position = image.bits.buffer.headers.patient_table_positi
 img_head.acquisition_time_stamp = image.bits.buffer.headers.acquisition_time_stamp(:,idx_2,idx_3,idx_4,idx_5,idx_6);
 img_head.channels = 1;
 img_head.data_type= 5;
+
+%% retrieve slice order from positions
+for s = 1:size(SPEN_Image,4)
+    idx_Encode = find(image.bits.buffer.headers.kspace_encode_step_1 ~= 0);
+    idx_Slice = find(image.bits.buffer.headers.slice==s-1);
+    idx_data = intersect(idx_Encode,idx_Slice);
+    idx_data = idx_data(1,1);
+    [~,idx_2,idx_3,idx_4,idx_5,idx_6] = ind2sub(size(image.bits.buffer.headers.kspace_encode_step_1),idx_data);
+    Positions = image.bits.buffer.headers.position(:,idx_2,idx_3,idx_4,idx_5,idx_6);
+    RotatedPositions=acq_header.SPEN_parameters.RotMat  .'*Positions;
+    SliceShift(1,s)=RotatedPositions(3,1);
+end
+Slice_order = sort(SliceShift);
 
 %% Set the good header parameters for each slice
 for s = 1:size(SPEN_Image,4)

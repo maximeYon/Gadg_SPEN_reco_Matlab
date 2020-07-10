@@ -34,6 +34,7 @@ if counter==0
     for ind = 1:size(acq_header.userParameters.userParameterLong,2)
         acq_header.SPEN_parameters.(acq_header.userParameters.userParameterLong(1,ind).name) = acq_header.userParameters.userParameterLong(1,ind).value;
     end
+    clearvars ind
     
     acq_header.SPEN_parameters.matrixSize(1,2) = acq_header.SPEN_parameters.Nky;
     %     acq_header.SPEN_parameters.nShots = acq_header.SPEN_parameters.Nseg;
@@ -45,8 +46,9 @@ if counter==0
         acq_header.SPEN_parameters.RO_pFT =1;
     end
     
-    clearvars ind
-    
+    acq_header.SPEN_parameters.bvalues = [acq_header.SPEN_parameters.bvalue_1  acq_header.SPEN_parameters.bvalue_2 acq_header.SPEN_parameters.bvalue_3  acq_header.SPEN_parameters.bvalue_4 acq_header.SPEN_parameters.bvalue_5  acq_header.SPEN_parameters.bvalue_6];
+    acq_header.SPEN_parameters.bvalues = acq_header.SPEN_parameters.bvalues(1,1:acq_header.SPEN_parameters.DiffWeightings);
+       
     %% Adapt specific SPEN parameters
     acq_header.SPEN_parameters.LPE = acq_header.SPEN_parameters.FOV(1,2)/10;
     acq_header.SPEN_parameters.nReps = 1; %% Need to be changed !!!!!!!!!!!!!!!!!
@@ -82,6 +84,7 @@ if counter==0
     PEShift=RotatedLocs(1,1);
     PEShiftSign=-1;
     acq_header.SPEN_parameters.PEShift=PEShiftSign*PEShift;
+    acq_header.SPEN_parameters.RotMat = RotMat; % store RotMat used to compute slice position
     clearvars RotMatread RotMatphase RotMatslice RotMat RotatedLocs PEShift PEShiftSign PosXYZ;
     
     %% Assign the parameters used for the Super-Resolution matrix
@@ -249,6 +252,19 @@ img_head.acquisition_time_stamp = image.bits.buffer.headers.acquisition_time_sta
 img_head.channels = 1;
 img_head.data_type= 5;
 
+%% retrieve slice order from positions
+for s = 1:size(SPEN_Image,4)
+    idx_Encode = find(image.bits.buffer.headers.kspace_encode_step_1 ~= 0);
+    idx_Slice = find(image.bits.buffer.headers.slice==s-1);
+    idx_data = intersect(idx_Encode,idx_Slice);
+    idx_data = idx_data(1,1);
+    [~,idx_2,idx_3,idx_4,idx_5,idx_6] = ind2sub(size(image.bits.buffer.headers.kspace_encode_step_1),idx_data);
+    Positions = image.bits.buffer.headers.position(:,idx_2,idx_3,idx_4,idx_5,idx_6);
+    RotatedPositions=acq_header.SPEN_parameters.RotMat  .'*Positions;
+    SliceShift(1,s)=RotatedPositions(3,1);
+end
+Slice_order = sort(SliceShift);
+
 %% Set the good header parameters for each slice
 for s = 1:size(SPEN_Image,4)
     idx_Encode = find(image.bits.buffer.headers.kspace_encode_step_1 ~= 0);
@@ -277,14 +293,11 @@ for s = 1:size(SPEN_Image,4)
     connection.send(image_saved);
 end
 %% ADC calculations
-if counter==Parameters.SPEN_parameters.repetition
-%     Parameters.SPEN_parameters.bvalues
-    bvalues = [0 1000];
-    [ADC_Images]=ADC_QB(Parameters.SPENimages, bvalues);
+if counter==Parameters.SPEN_parameters.repetition  
+    [ADC_Images]=ADC_QB(Parameters.SPENimages, Parameters.SPEN_parameters.bvalues);
     
     % Normalisation and reshape
     ADC_Images=abs(ADC_Images);
-    
     ADC_Images = single(ADC_Images);
     ADC_Images = reshape(ADC_Images,1,size(ADC_Images,1),size(ADC_Images,2),size(ADC_Images,3));
     %% Send ADC images
