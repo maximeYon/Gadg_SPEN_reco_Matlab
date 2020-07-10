@@ -305,7 +305,7 @@ if counter==Parameters.SPEN_parameters.repetition
     ADC_Images = reshape(ADC_Images,1,size(ADC_Images,1),size(ADC_Images,2),size(ADC_Images,3));
     %% Send ADC images
     slice_ind = 0;
-    for s = 1:Slice_order
+    for s = Slice_order
         idx_Encode = find(image.bits.buffer.headers.kspace_encode_step_1 ~= 0);
         idx_Slice = find(image.bits.buffer.headers.slice==s-1);
         idx_data = intersect(idx_Encode,idx_Slice);

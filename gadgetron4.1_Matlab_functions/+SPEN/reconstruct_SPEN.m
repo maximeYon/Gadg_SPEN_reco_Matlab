@@ -265,7 +265,7 @@ end
 
 %% Set the good header parameters for each slice
 slice_ind = 0;
-for s = 1:Slice_order
+for s = Slice_order
     idx_Encode = find(image.bits.buffer.headers.kspace_encode_step_1 ~= 0);
     idx_Slice = find(image.bits.buffer.headers.slice==s-1);
     idx_data = intersect(idx_Encode,idx_Slice);
