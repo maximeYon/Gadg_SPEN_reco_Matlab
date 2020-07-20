@@ -706,19 +706,94 @@ xmlns:xsl="http://www.w3.org/1999/XSL/Transform">
                             </xsl:choose>            
                           </value>
  			 </userParameterLong>
-              
+
+
                         <userParameterLong>
+                          <name>average_1</name>
+                          <value>
+ 			     <xsl:choose>
+                                <xsl:when test="siemens/MEAS/sDiffusion/alAverages[1]">
+                                    <xsl:value-of select="siemens/MEAS/sDiffusion/alAverages[1]"/>
+                                </xsl:when>
+                                <xsl:otherwise>0</xsl:otherwise>
+                            </xsl:choose>            
+                          </value>
+ 			 </userParameterLong>
+
+                        <userParameterLong>
+                          <name>average_2</name>
+                          <value>
+ 			     <xsl:choose>
+                                <xsl:when test="siemens/MEAS/sDiffusion/alAverages[2]">
+                                    <xsl:value-of select="siemens/MEAS/sDiffusion/alAverages[2]"/>
+                                </xsl:when>
+                                <xsl:otherwise>0</xsl:otherwise>
+                            </xsl:choose>            
+                          </value>
+ 			 </userParameterLong>
+
+                        <userParameterLong>
+                          <name>average_3</name>
+                          <value>
+ 			     <xsl:choose>
+                                <xsl:when test="siemens/MEAS/sDiffusion/alAverages[3]">
+                                    <xsl:value-of select="siemens/MEAS/sDiffusion/alAverages[3]"/>
+                                </xsl:when>
+                                <xsl:otherwise>0</xsl:otherwise>
+                            </xsl:choose>            
+                          </value>
+ 			 </userParameterLong>
+
+                        <userParameterLong>
+                          <name>average_4</name>
+                          <value>
+ 			     <xsl:choose>
+                                <xsl:when test="siemens/MEAS/sDiffusion/alAverages[4]">
+                                    <xsl:value-of select="siemens/MEAS/sDiffusion/alAverages[4]"/>
+                                </xsl:when>
+                                <xsl:otherwise>0</xsl:otherwise>
+                            </xsl:choose>            
+                          </value>
+ 			 </userParameterLong>
+
+                        <userParameterLong>
+                          <name>average_5</name>
+                          <value>
+ 			     <xsl:choose>
+                                <xsl:when test="siemens/MEAS/sDiffusion/alAverages[5]">
+                                    <xsl:value-of select="siemens/MEAS/sDiffusion/alAverages[5]"/>
+                                </xsl:when>
+                                <xsl:otherwise>0</xsl:otherwise>
+                            </xsl:choose>            
+                          </value>
+ 			 </userParameterLong>
+
+                        <userParameterLong>
+                          <name>average_6</name>
+                          <value>
+ 			     <xsl:choose>
+                                <xsl:when test="siemens/MEAS/sDiffusion/alAverages[6]">
+                                    <xsl:value-of select="siemens/MEAS/sDiffusion/alAverages[6]"/>
+                                </xsl:when>
+                                <xsl:otherwise>0</xsl:otherwise>
+                            </xsl:choose>            
+                          </value>
+ 			 </userParameterLong>
+          
+                        <!--<userParameterLong>
                           <name>DiffAverages</name>
                           <value>            
                             <xsl:value-of select="siemens/MEAS/sDiffusion/alAverages"/>
                           </value>
- 			 </userParameterLong>
+ 			 </userParameterLong>-->
+
                          <userParameterLong>
                           <name>DiffWeightings</name>
                           <value>            
                             <xsl:value-of select="siemens/MEAS/sDiffusion/lDiffWeightings"/>
                           </value>
  			 </userParameterLong>
+
                          <userParameterLong>
                           <name>DiffScheme</name>
                           <value>            

@@ -13,7 +13,7 @@ tic
 %% used for deconvolution of all sets
 if counter==0
     addpath('/usr/local/share/ismrmrd/matlab')
-    addpath(genpath('/home/mygadg/Code/Gadg_SPEN_reco_Matlab/gadgetron4.1_Matlab_functions/SPEN_Gadgetron_Reco'));
+    addpath(genpath('/home/vhos/Code/Gadg_SPEN_reco_Matlab/gadgetron4.1_Matlab_functions/SPEN_Gadgetron_Reco'));
     
     %% Retrieve common parameters and store them in acq_header. structure
     
@@ -48,7 +48,7 @@ if counter==0
     
     acq_header.SPEN_parameters.bvalues = [acq_header.SPEN_parameters.bvalue_1  acq_header.SPEN_parameters.bvalue_2 acq_header.SPEN_parameters.bvalue_3  acq_header.SPEN_parameters.bvalue_4 acq_header.SPEN_parameters.bvalue_5  acq_header.SPEN_parameters.bvalue_6];
     acq_header.SPEN_parameters.bvalues = acq_header.SPEN_parameters.bvalues(1,1:acq_header.SPEN_parameters.DiffWeightings);
-       
+    
     %% Adapt specific SPEN parameters
     acq_header.SPEN_parameters.LPE = acq_header.SPEN_parameters.FOV(1,2)/10;
     acq_header.SPEN_parameters.nReps = 1; %% Need to be changed !!!!!!!!!!!!!!!!!
@@ -296,13 +296,140 @@ for s = Slice_order
     connection.send(image_saved);
 end
 %% ADC calculations
-if counter==Parameters.SPEN_parameters.repetition  
-    [ADC_Images]=ADC_QB(Parameters.SPENimages, Parameters.SPEN_parameters.bvalues);
+if counter==Parameters.SPEN_parameters.repetition
+    % Calculate mean images
+    
+    for i=1:length(Parameters.SPEN_parameters.bvalues)
+        averages(i)=eval(strcat('Parameters.SPEN_parameters.average_',num2str(i)));
+    end
+    
+    Images=Parameters.SPEN_parameters.DiffDirections*ones(1,length(Parameters.SPEN_parameters.bvalues));
+    if Parameters.SPEN_parameters.bvalues(1)==0
+        Images(1)=1;
+    end
+    
+    TotalImages=sum(averages.*Images);
+    
+    steps=diff([0 averages]);
+    steps_mod=diff([averages(1) averages]);
+    
+    for i=1:length(Parameters.SPEN_parameters.bvalues)
+        ImagesStartingFromBvalue(i)=steps(i)*sum(Images(i:end));
+    end
+    
+    ImagesStartingFromBvalueMod=ImagesStartingFromBvalue;
+    for i=1:length(Parameters.SPEN_parameters.bvalues)
+        if ImagesStartingFromBvalueMod(i)==0
+            ImagesStartingFromBvalueMod(i)=ImagesStartingFromBvalueMod(i-1);
+        end
+    end
+    
+    ImagesStartingFromBvalue_perRep=ImagesStartingFromBvalue./steps;
+    idx_nan=isnan(ImagesStartingFromBvalue_perRep);
+    ImagesStartingFromBvalue_perRep(idx_nan)=0;
+    
+    
+    for i=1:length(Parameters.SPEN_parameters.bvalues)
+        if ImagesStartingFromBvalue_perRep(i)==0
+            ImagesStartingFromBvalue_perRep(i)=ImagesStartingFromBvalue_perRep(i-1);
+        end
+    end
+    
+    for i=1:length(Parameters.SPEN_parameters.bvalues)
+        if i~=1
+            if ImagesStartingFromBvalue(i)==0
+                AcquisitionStartIdxForBValue(i)=sum(ImagesStartingFromBvalue(1:i))-ImagesStartingFromBvalueMod(i)+sum(Images(max(find(ImagesStartingFromBvalue(1:i))):(i-1)))+1;
+            else
+                AcquisitionStartIdxForBValue(i)=sum(ImagesStartingFromBvalue(1:max(find(ImagesStartingFromBvalue(1:i))-1)))+1;
+            end
+        else
+            AcquisitionStartIdxForBValue(i)=sum(ImagesStartingFromBvalueMod(1:i))-ImagesStartingFromBvalueMod(i)+1;
+        end
+    end
+    
+    
+    ImagesStart=zeros(length(find(ImagesStartingFromBvalue)),length(Parameters.SPEN_parameters.bvalues));
+    for i=1:length(Parameters.SPEN_parameters.bvalues)
+        for k=1:length(Parameters.SPEN_parameters.bvalues)
+            %     ImagesStart(i,k)=sum(Images(1:i))-sum(Images(i))+1;
+            ImagesStart(k,i)=AcquisitionStartIdxForBValue(k)+sum(Images(k:i))-Images(i);
+        end
+    end
+    
+    for k=1:length(Parameters.SPEN_parameters.bvalues)
+        for i=1:length(Parameters.SPEN_parameters.bvalues)
+            if i<k
+                ImagesStart(k,i)=0;
+            end
+        end
+    end
+    
+    CumulativeImages=cumsum(ImagesStartingFromBvalue);
+    for i=1:length(Parameters.SPEN_parameters.bvalues)
+        ImagesPerBvalue{i}=[];
+    end
+    
+    for i=1:length(Parameters.SPEN_parameters.bvalues)
+        for k=(find(ImagesStartingFromBvalue(1:i)))
+            for m=1:Images(i)
+                ImagesPerBvalue{i}=cat(2,ImagesPerBvalue{i},(ImagesStart(k,i)+m-1):ImagesStartingFromBvalue_perRep(k):CumulativeImages(k));
+            end
+        end
+    end
+    
+    % calculate mean image per b-value
+    Mean_image=zeros([gsize(Parameters.SPENimages,1:3),length(Parameters.SPEN_parameters.bvalues)]);
+    for i=1:length(Parameters.SPEN_parameters.bvalues)
+        Mean_image(:,:,:,i)=mean(abs(Parameters.SPENimages(:,:,:,ImagesPerBvalue{i})),4);
+    end
+    
+    Mask_for_ADC=Parameters.SPENimages(:,:,:,1)/max(Parameters.SPENimages(:))>0.05;
+    
+    % calculate ADC maps
+    
+    [ADC_Images]=ADC_MO(Mean_image.*(repmat(Mask_for_ADC,[1 1 1 size(Mean_image,4)])), Parameters.SPEN_parameters.bvalues);
+    
     
     % Normalisation and reshape
     ADC_Images=abs(ADC_Images);
     ADC_Images = single(ADC_Images);
     ADC_Images = reshape(ADC_Images,1,size(ADC_Images,1),size(ADC_Images,2),size(ADC_Images,3));
+    
+        Mean_image = reshape(Mean_image,1,size(Mean_image,1),size(Mean_image,2),size(Mean_image,3),size(Mean_image,4));
+    Mean_image=uint16(4096*0.99*abs(Mean_image)/max(Mean_image(:)));
+    Mean_image = single(Mean_image);
+    
+    %% Send trace images
+    for k=1:size(Mean_image,5)
+        slice_ind = 0;
+        for s = Slice_order
+            idx_Encode = find(image.bits.buffer.headers.kspace_encode_step_1 ~= 0);
+            idx_Slice = find(image.bits.buffer.headers.slice==s-1);
+            idx_data = intersect(idx_Encode,idx_Slice);
+            idx_data = idx_data(1,1);
+            [~,idx_2,idx_3,idx_4,idx_5,idx_6] = ind2sub(size(image.bits.buffer.headers.kspace_encode_step_1),idx_data);
+            img_head.position = image.bits.buffer.headers.position(:,idx_2,idx_3,idx_4,idx_5,idx_6);
+            img_head.slice = image.bits.buffer.headers.slice(:,idx_2,idx_3,idx_4,idx_5,idx_6);
+            
+            %% Prepare image.data
+            image_saved = gadgetron.types.Image.from_data(abs(Mean_image(:,:,:,s,k)),img_head);
+            
+            %% Prepare image.header
+            image_saved.header.field_of_view(1,1) = acq_header.SPEN_parameters.FOV(1,1);
+            image_saved.header.field_of_view(1,2) = acq_header.SPEN_parameters.FOV(1,2);
+            image_saved.header.field_of_view(1,3) = acq_header.SPEN_parameters.FOV(1,3);
+            
+            image_saved.header.image_series_index = 5000;
+            slice_ind = slice_ind+1;
+            image_saved.header.image_index =slice_ind+((k-1)*Parameters.SPEN_parameters.nSlices)+5000;
+            image_saved.header.image_type = gadgetron.types.Image.MAGNITUDE;
+            
+            %% Send image
+            connection.send(image_saved);
+        end
+    end
+    
+    
     %% Send ADC images
     slice_ind = 0;
     for s = Slice_order
@@ -322,13 +449,17 @@ if counter==Parameters.SPEN_parameters.repetition
         image_saved.header.field_of_view(1,2) = acq_header.SPEN_parameters.FOV(1,2);
         image_saved.header.field_of_view(1,3) = acq_header.SPEN_parameters.FOV(1,3);
         
-        image_saved.header.image_series_index = 5000;
+        image_saved.header.image_series_index = 6000;
         slice_ind = slice_ind+1;
-        image_saved.header.image_index = slice_ind+5000;
+        image_saved.header.image_index = slice_ind+6000;
         image_saved.header.image_type = gadgetron.types.Image.MAGNITUDE;
         
         %% Send image
         connection.send(image_saved);
     end
+    
+    
+    
+    
 end
 end
