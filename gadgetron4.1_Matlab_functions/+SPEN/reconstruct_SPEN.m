@@ -190,29 +190,39 @@ SPEN_Image=permute(SPEN_Image, [2,1,3]);
 SPEN_Image = flip(flip(SPEN_Image,2),1);
 
 %% Siemens love square matrices, we need to regrid to acq_header.encoding.encodedSpace.matrixSize.y
-% This works only if the current matrice is smaller
-if size(SPEN_Image,2) < acq_header.encoding.encodedSpace.matrixSize.y
-    diff_Npoints = acq_header.encoding.encodedSpace.matrixSize.y-size(SPEN_Image,2);
-    if mod(diff_Npoints,2) ==0 % pair
-        mat_ZF = zeros(size(SPEN_Image,1),diff_Npoints/2,size(SPEN_Image,3));
-        SPEN_Image = FFTKSpace2XSpace(cat(2,mat_ZF,FFTXSpace2KSpace(SPEN_Image,2),mat_ZF),2);
-    else % impaire
-        mat_ZF1 = zeros(size(SPEN_Image,1),floor(diff_Npoints/2),size(SPEN_Image,3));
-        mat_ZF2 = zeros(size(SPEN_Image,1),ceil(diff_Npoints/2),size(SPEN_Image,3));
-        SPEN_Image = FFTKSpace2XSpace(cat(2,mat_ZF1,FFTXSpace2KSpace(SPEN_Image,2),mat_ZF2),2);
-    end
-elseif size(SPEN_Image,1) < size(SPEN_Image,2)
-    diff_Npoints = size(SPEN_Image,2)-size(SPEN_Image,1);
-    if mod(diff_Npoints,2) ==0 % pair
-        mat_ZF = zeros(diff_Npoints/2,size(SPEN_Image,2),size(SPEN_Image,3));
-        SPEN_Image = FFTKSpace2XSpace(cat(1,mat_ZF,FFTXSpace2KSpace(SPEN_Image,1),mat_ZF),1);
-    else % impaire
-        mat_ZF1 = zeros(floor(diff_Npoints/2),size(SPEN_Image,2),size(SPEN_Image,3));
-        mat_ZF2 = zeros(ceil(diff_Npoints/2),size(SPEN_Image,2),size(SPEN_Image,3));
-        SPEN_Image = FFTKSpace2XSpace(cat(1,mat_ZF1,FFTXSpace2KSpace(SPEN_Image,1),mat_ZF2),1);
-    end
-    
+if size(SPEN_Image,1) < size(SPEN_Image,2)
+    [X,Y] = meshgrid(1:size(SPEN_Image,2),1:(size(SPEN_Image,2)-1)/(size(SPEN_Image,1)-1):size(SPEN_Image,2));
+    [Xq,Yq] = meshgrid(1:size(SPEN_Image,2),1:size(SPEN_Image,2));
+    SPEN_Image = interp2(X,Y,SPEN_Image,Xq,Yq,'cubic');
+elseif size(SPEN_Image,2) < size(SPEN_Image,1)
+    [X,Y] = meshgrid(1:(size(SPEN_Image,1)-1)/(size(SPEN_Image,2)-1):size(SPEN_Image,1),1:size(SPEN_Image,1));
+    [Xq,Yq] = meshgrid(1:size(SPEN_Image,1),1:size(SPEN_Image,1));
+    SPEN_Image = interp2(X,Y,SPEN_Image,Xq,Yq,'cubic');
 end
+
+%% Classical zero filling can induce artefact in SPEN
+% if size(SPEN_Image,2) < acq_header.encoding.encodedSpace.matrixSize.y
+%     diff_Npoints = acq_header.encoding.encodedSpace.matrixSize.y-size(SPEN_Image,2);
+%     if mod(diff_Npoints,2) ==0 % pair
+%         mat_ZF = zeros(size(SPEN_Image,1),diff_Npoints/2,size(SPEN_Image,3));
+%         SPEN_Image = FFTKSpace2XSpace(cat(2,mat_ZF,FFTXSpace2KSpace(SPEN_Image,2),mat_ZF),2);
+%     else % impaire
+%         mat_ZF1 = zeros(size(SPEN_Image,1),floor(diff_Npoints/2),size(SPEN_Image,3));
+%         mat_ZF2 = zeros(size(SPEN_Image,1),ceil(diff_Npoints/2),size(SPEN_Image,3));
+%         SPEN_Image = FFTKSpace2XSpace(cat(2,mat_ZF1,FFTXSpace2KSpace(SPEN_Image,2),mat_ZF2),2);
+%     end
+% elseif size(SPEN_Image,1) < size(SPEN_Image,2)
+%     diff_Npoints = size(SPEN_Image,2)-size(SPEN_Image,1);
+%     if mod(diff_Npoints,2) ==0 % pair
+%         mat_ZF = zeros(diff_Npoints/2,size(SPEN_Image,2),size(SPEN_Image,3));
+%         SPEN_Image = FFTKSpace2XSpace(cat(1,mat_ZF,FFTXSpace2KSpace(SPEN_Image,1),mat_ZF),1);
+%     else % impaire
+%         mat_ZF1 = zeros(floor(diff_Npoints/2),size(SPEN_Image,2),size(SPEN_Image,3));
+%         mat_ZF2 = zeros(ceil(diff_Npoints/2),size(SPEN_Image,2),size(SPEN_Image,3));
+%         SPEN_Image = FFTKSpace2XSpace(cat(1,mat_ZF1,FFTXSpace2KSpace(SPEN_Image,1),mat_ZF2),1);
+%     end
+%     
+% end
 
 % Normalisation of the SPEN images (on the first one: b0 in diff)
 if counter==1
