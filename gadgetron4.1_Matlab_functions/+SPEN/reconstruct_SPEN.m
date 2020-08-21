@@ -13,7 +13,7 @@ tic
 %% used for deconvolution of all sets
 if counter==0
     addpath('/usr/local/share/ismrmrd/matlab')
-    addpath(genpath('/home/mygadg/Code/Gadg_SPEN_reco_Matlab/gadgetron4.1_Matlab_functions/SPEN_Gadgetron_Reco'));
+    addpath(genpath('/home/imagerie/Dev/Gadg_SPEN_reco_Matlab/gadgetron4.1_Matlab_functions/SPEN_Gadgetron_Reco'));
     
     %% Retrieve common parameters and store them in acq_header. structure
     

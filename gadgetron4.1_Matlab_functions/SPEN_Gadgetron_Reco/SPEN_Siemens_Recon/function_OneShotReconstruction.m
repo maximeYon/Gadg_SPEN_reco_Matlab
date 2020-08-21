@@ -20,6 +20,7 @@ nSlices = parameters.nSlices;
 TVW_L2 = parameters.TVW_L2;
 Npe = parameters.Npe;
 nReps = parameters.nReps;
+Nro=size(CmplxDataSh,2); % number of lines in read-out direction
 
 %% Coil Compressing
 CCCurCmplxDataSx=ApplySCCBySlices(CmplxDataSh(:,:,:,:,:,:,:),gccmtx_aligned_finalx,nccx); % Compressing data to nccx channels

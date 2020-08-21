@@ -12,8 +12,8 @@ Parameters = struct;
 try
     while true
         next_acquisition = @connection.next;
-%         [Parameters] = gadgetron.SPEN.reconstruct_SPEN(next_acquisition,connection,Parameters);
-        [Parameters] = gadgetron.SPEN.reconstruct_SPEN_diff(next_acquisition,connection,Parameters);
+        [Parameters] = gadgetron.SPEN.reconstruct_SPEN(next_acquisition,connection,Parameters);
+%         [Parameters] = gadgetron.SPEN.reconstruct_SPEN_diff(next_acquisition,connection,Parameters);
     end
 catch ME
     if ~strcmp(ME.identifier, 'Connection:noNextItem'), rethrow(ME); end
