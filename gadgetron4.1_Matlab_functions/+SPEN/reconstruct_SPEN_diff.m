@@ -195,11 +195,19 @@ SPEN_Image = flip(flip(SPEN_Image,2),1);
 if size(SPEN_Image,1) < size(SPEN_Image,2)
     [X,Y] = meshgrid(1:size(SPEN_Image,2),1:(size(SPEN_Image,2)-1)/(size(SPEN_Image,1)-1):size(SPEN_Image,2));
     [Xq,Yq] = meshgrid(1:size(SPEN_Image,2),1:size(SPEN_Image,2));
-    SPEN_Image = interp2(X,Y,SPEN_Image,Xq,Yq,'cubic');
+    for i=1:size(SPEN_Image,3)
+	SPEN_Image_temp(:,:,i) = interp2(X,Y,SPEN_Image(:,:,i),Xq,Yq,'cubic');
+    end
+    SPEN_Image=SPEN_Image_temp;
+    clear SPEN_Image_temp
 elseif size(SPEN_Image,2) < size(SPEN_Image,1)
     [X,Y] = meshgrid(1:(size(SPEN_Image,1)-1)/(size(SPEN_Image,2)-1):size(SPEN_Image,1),1:size(SPEN_Image,1));
     [Xq,Yq] = meshgrid(1:size(SPEN_Image,1),1:size(SPEN_Image,1));
-    SPEN_Image = interp2(X,Y,SPEN_Image,Xq,Yq,'cubic');
+    for i=1:size(SPEN_Image,3)
+    	SPEN_Image_temp(:,:,i) = interp2(X,Y,SPEN_Image(:,:,i),Xq,Yq,'cubic');
+    end
+    SPEN_Image=SPEN_Image_temp;
+    clear SPEN_Image_temp
 end
 
 %% Classical zero filling can induce artefact in SPEN
