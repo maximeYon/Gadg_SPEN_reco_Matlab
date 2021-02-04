@@ -318,7 +318,7 @@ xmlns:xsl="http://www.w3.org/1999/XSL/Transform">
                             <xsl:value-of select="siemens/IRIS/DERIVED/imageColumns"/>
                         </x>
                         <y>
-                            <xsl:value-of select="siemens/IRIS/DERIVED/imageLines"/>
+                            <xsl:value-of select="siemens/MEAS/sWipMemBlock/alFree[8]"/>
                         </y>
                         <xsl:choose>
                             <xsl:when test="siemens/YAPS/i3DFTLength = 1">
