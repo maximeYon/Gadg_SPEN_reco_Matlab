@@ -284,7 +284,7 @@ xmlns:xsl="http://www.w3.org/1999/XSL/Transform">
                             </xsl:when>
                             <xsl:otherwise>
                                 <y>
-                                    <xsl:value-of select="siemens/YAPS/iPEFTLength"/>
+                                    <xsl:value-of select="siemens/MEAS/sWipMemBlock/alFree[8]"/>
                                 </y>
                             </xsl:otherwise>
                         </xsl:choose>
